@@ -64,7 +64,7 @@ function PlacesAutocomplete() {
   }
 
   const parseAttributes = (object) => {
-    let regex = /^<a href\=\"(.*?)\"\>(.*?)<\/a>$/;
+    let regex = /^<a href="(.*?)">(.*?)<\/a>$/;
     let string = object.toString();
     let components = string.match(regex);
     return <a href={components[1]}>Image: {components[2]}</a>;
