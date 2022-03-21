@@ -93,6 +93,10 @@ function PlacesAutocomplete() {
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Enter an establishment"
           value={query}
+          style={{
+            boxSizing: 'border-box',
+            width: '600px'
+          }}
         />
       </div>
       {Object.keys(currentInfo).length !== 0 ? (
