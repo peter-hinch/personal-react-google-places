@@ -5,8 +5,6 @@ import { useState, useEffect, useRef } from 'react';
 
 let autoComplete;
 
-console.log(process.env.REACT_APP_PLACES_API_KEY);
-
 const loadScript = (url, callback) => {
   let script = document.createElement('script');
   script.type = 'text/javascript';
@@ -26,26 +24,9 @@ const loadScript = (url, callback) => {
   document.getElementsByTagName('head')[0].appendChild(script);
 };
 
-function handleScriptLoad(updateQuery, autoCompleteRef) {
-  autoComplete = new window.google.maps.places.Autocomplete(
-    autoCompleteRef.current,
-    { types: ['establishment'] }
-  );
-  autoComplete.setFields(['address_components', 'formatted_address']);
-  autoComplete.addListener('place_changed', () =>
-    handlePlaceSelect(updateQuery)
-  );
-}
-
-async function handlePlaceSelect(updateQuery) {
-  const addressObject = autoComplete.getPlace();
-  const query = addressObject.formatted_address;
-  updateQuery(query);
-  console.log(addressObject);
-}
-
 function PlacesAutocomplete() {
   const [query, setQuery] = useState('');
+  const [currentInfo, setCurrentInfo] = useState({});
   const autoCompleteRef = useRef(null);
 
   useEffect(() => {
@@ -55,14 +36,84 @@ function PlacesAutocomplete() {
     );
   }, []);
 
+  function handleScriptLoad(updateQuery, autoCompleteRef) {
+    autoComplete = new window.google.maps.places.Autocomplete(
+      autoCompleteRef.current,
+      { types: ['establishment'] }
+    );
+    autoComplete.setFields([
+      'place_id',
+      'geometry',
+      'name',
+      'formatted_address',
+      'photos',
+      'website',
+      'url'
+    ]);
+    autoComplete.addListener('place_changed', () =>
+      handlePlaceSelect(updateQuery)
+    );
+  }
+
+  async function handlePlaceSelect(updateQuery) {
+    const addressObject = autoComplete.getPlace();
+    const query = addressObject.formatted_address;
+    updateQuery(query);
+    console.log(addressObject);
+    setCurrentInfo(addressObject);
+  }
+
+  const parseAttributes = (object) => {
+    let regex = /^<a href\=\"(.*?)\"\>(.*?)<\/a>$/;
+    let string = object.toString();
+    let components = string.match(regex);
+    return <a href={components[1]}>Image: {components[2]}</a>;
+  };
+
   return (
-    <div className="search-location-input">
-      <input
-        ref={autoCompleteRef}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder="Enter an establishment"
-        value={query}
-      />
+    <div>
+      <div className="search-location-input">
+        <input
+          ref={autoCompleteRef}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Enter an establishment"
+          value={query}
+        />
+      </div>
+      {Object.keys(currentInfo).length !== 0 ? (
+        <div>
+          <div>{currentInfo.name}</div>
+          <div>
+            <a href={currentInfo.website}>{currentInfo.name} Website</a>
+          </div>
+          {currentInfo.hasOwnProperty('photos') ? (
+            /* When using images returned by the Places API, if an attribution */
+            /* exists for that image it must be displayed with the result. */
+            <>
+              <div>
+                <img
+                  src={currentInfo.photos[0].getUrl()}
+                  alt={currentInfo.name}
+                  width="600"
+                />
+                {parseAttributes(currentInfo.photos[0].html_attributions[0])}
+              </div>
+              <div>{currentInfo.formatted_address}</div>
+            </>
+          ) : (
+            <></>
+          )}
+          {/* Results returned by the Google Places API must have a link to the */}
+          {/* Google Business Profile for that result. */}
+          <div>
+            <a href={currentInfo.url}>
+              Google Business Profile for {currentInfo.name}
+            </a>
+          </div>
+        </div>
+      ) : (
+        <></>
+      )}
     </div>
   );
 }
