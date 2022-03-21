@@ -123,12 +123,18 @@ function PlacesAutocomplete() {
           )}
           <p>{currentInfo.formatted_address}</p>
           <p>{currentInfo.formatted_phone_number}</p>
-          <p>{currentInfo.opening_hours.isOpen ? 'Open Now' : 'Closed'}</p>
-          <ul>
-            {currentInfo.opening_hours.weekday_text.map((weekday) => (
-              <li>{weekday}</li>
-            ))}
-          </ul>
+          {currentInfo.hasOwnProperty('opening_hours') ? (
+            <>
+              <p>{currentInfo.opening_hours.isOpen ? 'Open Now' : 'Closed'}</p>
+              <ul>
+                {currentInfo.opening_hours.weekday_text.map((weekday) => (
+                  <li>{weekday}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <></>
+          )}
           {/* Results returned by the Google Places API must have a link to the */}
           {/* Google Business Profile for that result. */}
           <small>
