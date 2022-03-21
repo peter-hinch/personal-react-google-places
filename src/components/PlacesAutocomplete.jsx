@@ -63,11 +63,24 @@ function PlacesAutocomplete() {
     setCurrentInfo(addressObject);
   }
 
-  const parseAttributes = (object) => {
+  const parseAttributes = (attributions) => {
+    // Regular expression for extracting url and name from provided HTML object.
+    // This avoids the need for using dangerouslySetInnerHTML in React:
+    // 1st group: link url
+    // 2nd group: contributor name
     let regex = /^<a href="(.*?)">(.*?)<\/a>$/;
-    let string = object.toString();
-    let components = string.match(regex);
-    return <a href={components[1]}>Image: {components[2]}</a>;
+
+    // Check that the array given for attributions contains an object.
+    if (attributions.length > 0) {
+      let string = attributions[0].toString();
+      // Use the regex to obtain two groups and assign them to the array 'components'.
+      let components = string.match(regex);
+      // Return a link in JSX format.
+      return <a href={components[1]}>Image: {components[2]}</a>;
+    } else {
+      // If there were no attributions present, return an empty React fragment.
+      return <></>;
+    }
   };
 
   return (
@@ -96,7 +109,9 @@ function PlacesAutocomplete() {
                   alt={currentInfo.name}
                   width="600"
                 />
-                {parseAttributes(currentInfo.photos[0].html_attributions[0])}
+              </div>
+              <div>
+                {parseAttributes(currentInfo.photos[0].html_attributions)}
               </div>
               <div>{currentInfo.formatted_address}</div>
             </>
