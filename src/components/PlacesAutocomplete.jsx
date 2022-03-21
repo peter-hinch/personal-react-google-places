@@ -45,9 +45,11 @@ function PlacesAutocomplete() {
       'place_id',
       'geometry',
       'name',
-      'formatted_address',
-      'photos',
       'website',
+      'photos',
+      'formatted_address',
+      'formatted_phone_number',
+      'opening_hours',
       'url'
     ]);
     autoComplete.addListener('place_changed', () =>
@@ -95,10 +97,10 @@ function PlacesAutocomplete() {
       </div>
       {Object.keys(currentInfo).length !== 0 ? (
         <div>
-          <div>{currentInfo.name}</div>
-          <div>
-            <a href={currentInfo.website}>{currentInfo.name} Website</a>
-          </div>
+          <h2>{currentInfo.name}</h2>
+          <p>
+            <a href={currentInfo.website}>Website</a>
+          </p>
           {currentInfo.hasOwnProperty('photos') ? (
             /* When using images returned by the Places API, if an attribution */
             /* exists for that image it must be displayed with the result. */
@@ -110,21 +112,30 @@ function PlacesAutocomplete() {
                   width="600"
                 />
               </div>
-              <div>
-                {parseAttributes(currentInfo.photos[0].html_attributions)}
-              </div>
-              <div>{currentInfo.formatted_address}</div>
+              <small>
+                <em>
+                  {parseAttributes(currentInfo.photos[0].html_attributions)}
+                </em>
+              </small>
             </>
           ) : (
             <></>
           )}
+          <p>{currentInfo.formatted_address}</p>
+          <p>{currentInfo.formatted_phone_number}</p>
+          <p>{currentInfo.opening_hours.isOpen ? 'Open Now' : 'Closed'}</p>
+          <ul>
+            {currentInfo.opening_hours.weekday_text.map((weekday) => (
+              <li>{weekday}</li>
+            ))}
+          </ul>
           {/* Results returned by the Google Places API must have a link to the */}
           {/* Google Business Profile for that result. */}
-          <div>
+          <small>
             <a href={currentInfo.url}>
               Google Business Profile for {currentInfo.name}
             </a>
-          </div>
+          </small>
         </div>
       ) : (
         <></>
